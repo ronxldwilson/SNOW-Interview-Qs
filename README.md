@@ -4,10 +4,13 @@ Important Concepts
 
 Done:
 
-3. What is full form of CMDB and what is it?
+1. What is full form of CMDB and what is it?
 
 CMDB stands for Configuration Management Database. CMDB is a repository. It acts as a data warehouse for information technology installations. It holds data related to a collection of IT assets, and descriptive relationships between such assets.
 
+4. What is LDAP Integration and its use?    [LDAP]
+
+LDAP is Light weight Directory Access Protocol. You can use it for user data population and user authentication. ServiceNow integrates with LDAP directory to streamline the user log in process and to automate the creation of user and assigning them roles.
 
 To be Done:
 
@@ -17,11 +20,6 @@ Dictionary overrides provide the ability to define a field on an extended table 
 
 2. What do you mean by coalesce?
 The field property that is used in transform map field mapping is known as Coalesce. Coalescing on a field allows you to use that field as a unique key. The existing record will get updated with the imported information if a match with the coalesce field is found. If you can’t find a match, then insertion of a new record into the database will take place.
-
-
-4. What is LDAP Integration and its use?    [LDAP]
-
-LDAP is Light weight Directory Access Protocol. You can use it for user data population and user authentication. ServiceNow integrates with LDAP directory to streamline the user log in process and to automate the creation of user and assigning them roles.
 
 5. What do you mean by data lookup and record matching?
 
@@ -208,3 +206,100 @@ You can use addActiveQuery() method to get all the active records and addInactiv
 
 50. What is the difference between next() and _next() method?
 next() method is responsible to move to the next record in GlideRecord. _next() provides the same functionality as next(), intended to be used in cases when we query the table having a column name as next.
+
+
+
+# CODE SNIPPETS/ CODING Qs
+
+Best Practices of writing Client Script
+
+    - Write it only if required. Use UI policy if possible
+    - If GlideAjax call is to be written, write it in Asynchronus glide ajax, as it will not delay the application and the code will execute in the backgroud
+    - Use g_scratchpad for server interactions
+
+# Client Script 
+
+## Q1 Compare Two Dates in the incidnet table to be not able to submit if the Issue creation date is more than the issue resolved date.
+
+    function onSubmit() {
+    //Type appropriate comment here, and begin script below
+    var createDate = g_form.getValue('u_issue_created_on');
+    var resolvedDate = g_form.getValue('u_issue_resolved_on');
+
+    if(resolvedDate>createDate){
+        g_form.addInfoMessage('Form Submitted');
+        return true;
+    }
+    else {
+        g_form.addErrorMessage('Resolved Date must be mmore than Issue date');
+        return false;
+    }
+
+    }
+
+Ans. It is possible to prevent the form from submission by returing false from the funciton. This will not allow the form  to get submitted.
+
+## Q2 Whenever the form gets loaded, it should autofill the incident created on field
+
+When user change the caller the:
+1.Email of that changed caller will be displayed in email field.
+2.Configuration field become mandatory.
+3.State field value will change to In-Progress
+4.Short description will populated with some text.
+
+    function onChange(control, oldValue, newValue, isLoading, isTemplate) {
+        if (isLoading || newValue === '') {
+            return;
+        }
+        
+        var callerEmail =  g_form.getReference('caller_id').email;
+        g_form.setValue("u_caller_email",callerEmail);
+        g_form.setMandatory("cmdb_ci",true);
+        g_form.setValue("state","2");
+        g_form.setValue("short_description","Hello World");
+
+    }
+
+## Q3 How to change behaviour of an OnChange Script to Onload Script
+
+function onChange(control, oldValue, newValue, isLoading, isTemplate) {
+      if (isLoading || newValue === '') {
+        return;
+      }
+}
+
+//This is the code for onChange
+
+// Here just remore the isloading parameter and write the code above return that way it will act as onLoad script
+
+## Q4 Which Executes first, client script or UI policy
+
+Client script executes first and then the UI policy 
+
+If there's a conflicting logic between the two then UI policy takes precedence
+
+
+## Q5 Differences between CS and UI policy
+
+This is how you get the oldValue of the fields 
+
+1.Client script executes on form save/submit/update whereas Ul Policy does not.
+2.Client Script have access to field's old Value whereas Policy does not.
+3.Ul Policy set field attributes with no scripting whereas Client Script does not.
+4.Client script executes on list view whereas Ul policy does not.
+
+	g_form.addInfoMessage(g_form.getValue("short_description",oldValue));
+
+
+##
+
+
+
+
+
+
+
+
+
+
+
