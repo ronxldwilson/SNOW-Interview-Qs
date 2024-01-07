@@ -291,11 +291,64 @@ This is how you get the oldValue of the fields
 	g_form.addInfoMessage(g_form.getValue("short_description",oldValue));
 
 
-##
+## Q6 Difference between onCellEdit and onChange
+
+In OnCellEdit client script it is not possible to update the glide form API since, the changes are already made to the server. That's why we need to run the server side code to manipulate the data.
+
+## Q7 Write the code to not allow submission of data if resolved date is less than created date in list view
+
+Now since we need to run the server code, in client script. we will need to run the it using the glideAJAX
+
+Client Script
+
+    function onCellEdit(sysIDs, table, oldValues, newValue, callback) {
+        // var saveAndClose = true;
+        //Type appropriate comment here, and begin script below
+
+        var ga = new GlideAjax('cellEditTest');
+        ga.addParam('sysparam_name','validDates');//this is the function which is being called from the SI
+        ga.addParam('sysparam_sysIDs',sysIDs);	 //this is the sent to script inc
+        ga.addParam('sysparam_newValue',newValue);		//this is the sent to script inc
+
+        ga.getXML(checkDates);
+
+        function checkDates(response){
+            var answer = response.responseXML.documentElement.getAttribute("answer");
+            if(answer=="Go"){
+                callback(false);
+            }
+            else if(answer=="No Go")
+            {
+                alert("please check the dates");
+                callback(false);
+            }
+        }
+    }
 
 
+Script Include
 
+    var cellEditTest = Class.create();
+    cellEditTest.prototype = Object.extendsObject(AbstractAjaxProcessor, {
 
+        validDates: function(){
+        var newDate = this.getParameter('sysparam_newValue');
+            var gr = new GlideRecord('incident');
+            gr.addQuery('sys_id',this.getParameter('sysparam_sysIDs'));
+            gr.query();
+            if(gr.next()){
+                if (newDate>gr.u_issue_resolved_on){
+                    return "No Go";
+                }
+                else 
+                {
+                    return "Go";
+                }
+            } 
+        },
+
+        type: 'cellEditTest'
+    });
 
 
 
